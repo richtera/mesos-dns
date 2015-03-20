@@ -253,7 +253,10 @@ func (rg *RecordGenerator) InsertState(sj StateJSON, domain string, mname string
 			host, err := rg.hostBySlaveId(task.SlaveId)
 			if err == nil && (task.State == "TASK_RUNNING") {
 
-				tname := cleanName(task.Name)
+				names := strings.Split(cleanName(task.Name), ".")
+				sname := names[0]
+				gname := strings.Join(names[1:], ".")
+
 				tail := fname + "." + domain + "."
 
 				// hack - what to do?
@@ -261,19 +264,28 @@ func (rg *RecordGenerator) InsertState(sj StateJSON, domain string, mname string
 					sports := yankPorts(task.Resources.Ports)
 
 					// FIXME - 3 nested loops
+					pi := 0
 					for s := 0; s < len(sports); s++ {
-						var srvhost string = tname + "." + fname + "." + domain + ":" + sports[s]
+						var srvhost string = sname + "." + gname + "." + fname + "." + domain + ":" + sports[s]
 
-						tcp := "_" + tname + "._tcp." + tail
-						udp := "_" + tname + "._udp." + tail
+						tcp := "_" + sname + "." + gname + "._tcp." + tail
+						udp := "_" + sname + "." + gname + "._udp." + tail
 
 						rg.insertRR(tcp, srvhost, "SRV")
 						rg.insertRR(udp, srvhost, "SRV")
+
+						tcp2 := "_" + sname + "_" + strconv.Itoa(pi) + "." + gname + "._tcp." + tail
+						udp2 := "_" + sname + "_" + strconv.Itoa(pi) + "." + gname + "._udp." + tail
+
+						pi++;
+
+						rg.insertRR(tcp2, srvhost, "SRV")
+						rg.insertRR(udp2, srvhost, "SRV")
 					}
 
 				}
 
-				arec := tname + "." + tail
+				arec := sname + "." + gname + "." + tail
 				rg.insertRR(arec, host, "A")
 
 			}
