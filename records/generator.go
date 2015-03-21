@@ -256,6 +256,9 @@ func (rg *RecordGenerator) InsertState(sj StateJSON, domain string, mname string
 				names := strings.Split(cleanName(task.Name), ".")
 				sname := names[0]
 				gname := strings.Join(names[1:], ".")
+				if gname != "" {
+					gname := "." + gname
+				}
 
 				tail := fname + "." + domain + "."
 
@@ -266,16 +269,16 @@ func (rg *RecordGenerator) InsertState(sj StateJSON, domain string, mname string
 					// FIXME - 3 nested loops
 					pi := 0
 					for s := 0; s < len(sports); s++ {
-						var srvhost string = sname + "." + gname + "." + fname + "." + domain + ":" + sports[s]
+						var srvhost string = sname + gname + "." + fname + "." + domain + ":" + sports[s]
 
-						tcp := "_" + sname + "." + gname + "._tcp." + tail
-						udp := "_" + sname + "." + gname + "._udp." + tail
+						tcp := "_" + sname + gname + "._tcp." + tail
+						udp := "_" + sname + gname + "._udp." + tail
 
 						rg.insertRR(tcp, srvhost, "SRV")
 						rg.insertRR(udp, srvhost, "SRV")
 
-						tcp2 := "_" + sname + "_" + strconv.Itoa(pi) + "." + gname + "._tcp." + tail
-						udp2 := "_" + sname + "_" + strconv.Itoa(pi) + "." + gname + "._udp." + tail
+						tcp2 := "_" + sname + "_" + strconv.Itoa(pi) + gname + "._tcp." + tail
+						udp2 := "_" + sname + "_" + strconv.Itoa(pi) + gname + "._udp." + tail
 
 						pi++;
 
@@ -285,7 +288,7 @@ func (rg *RecordGenerator) InsertState(sj StateJSON, domain string, mname string
 
 				}
 
-				arec := sname + "." + gname + "." + tail
+				arec := sname + gname + "." + tail
 				rg.insertRR(arec, host, "A")
 
 			}
